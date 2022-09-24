@@ -5,8 +5,8 @@ import arc from './Arc.json'
 import gen from './Gen.json'
 
 
-const arcAddress = '0xf710F3e8bE1180a3a4863330D5009278e799d4A8';
-const genAddress = '0xBcBA7755Ec71837E7871b324faDEb0AACdb07444';
+const arcAddress = '0x4B396F08cDa12A9F6C0cD9cBab6bDfa06585077B';
+const genAddress = '0x68Dda751306a10C7636D929370f98e0F786c80Ef';
 
 function App() {
   const [accounts, setAccounts] = useState ([]);
@@ -36,14 +36,33 @@ function App() {
         
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
+    const arcContract = new ethers.Contract(
+        arcAddress,
+        arc.abi,
+        signer
+    );
+    try {
+        const response = await arcContract.totalSupply();
+        alert(`${response}/3333 Crazy Tigers have been MInted!`);
+        console.log('response: ', response)
+    } 
+    catch (err) {
+        console.log('error', err )
+    }
+
+  }
+  async function Flip() {
+        
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
     const genContract = new ethers.Contract(
         genAddress,
         gen.abi,
         signer
     );
     try {
-        const response = await genContract.totalSupply();
-        alert(`${response}/3333 Crazy Tigers have been MInted!`);
+        const response = await genContract.flipPublicState();
+        alert(`active!`);
         console.log('response: ', response)
     } 
     catch (err) {
@@ -69,14 +88,15 @@ function App() {
       let tokensOwned = []
       let tokensNotMinted = []
       try {
-        for(let i = 0; i < 6; i++) {
+        for (let i = 0; i < 4782; i++) {
           const owner = await arcContract.ownerOf(i);
           if (owner === address) {
-            tokensOwned.push(i);
+            tokensOwned.push(i);  
           } else {
             alert('You must be owner to mint these Gen-0!!!')
             return;
           }
+        
         }
         console.log(tokensOwned)
         for(let i = 0; i < tokensOwned.length; i++){
@@ -103,7 +123,7 @@ function App() {
             console.log(split)
             console.log(tokenRandom)
         
-            const response = await genContract.mintGen(tokenRandom);
+            const response = await genContract.mintPublicGen((tokenRandom), {value: ethers.utils.parseEther((0.009 * mintAmount).toString())});
             console.log('response: ', response) 
           }
         }
@@ -145,7 +165,7 @@ function App() {
                 </button>
               </div>
               <button 
-                onClick={handleGenMint}>Mint Now
+                onClick={Flip}>Mint Now
               </button>
               <button 
                 onClick={getTotalSupply}>#Minted?

@@ -3,7 +3,7 @@ const hre = require("hardhat");
 
 async function main() {
 
-  const url = 'https://bafybeihnroh6ryrewm7bheun4fza6koqportaunryvtiya7xqqgfoddyki.ipfs.nftstorage.link/';
+  const url = 'https://bafybeid4fexmtcvo2nunf5xhrrdkozpc55tvjnfmscjlhsclyzaxue5hne.ipfs.nftstorage.link/';
 
   const Gen = await hre.ethers.getContractFactory("Gen");
   const gen = await Gen.deploy(url);

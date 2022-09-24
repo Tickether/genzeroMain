@@ -5,7 +5,7 @@ const dotenv = require("dotenv")
 dotenv.config();
 
 module.exports = {
-  solidity: "0.8.11",
+  solidity: "0.8.4",
   networks: {
     mainnet: {
       url: process.env.REACT_APP_MAINNET_RPC_URL,
