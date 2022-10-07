@@ -27,7 +27,6 @@ contract GenZero is ERC721A, MerkleDistributor, Ownable, ReentrancyGuard {
 
     // Mapping between tokenId => seasonal collectiong baseURI
     mapping(uint256 => string) private _gensRegistry;
-
     
     event GenUpdated(uint256 tokenId, string newBaseURI);
 
