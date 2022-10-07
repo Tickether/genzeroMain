@@ -5,13 +5,12 @@ async function main() {
 
   const url = 'https://bafybeid4fexmtcvo2nunf5xhrrdkozpc55tvjnfmscjlhsclyzaxue5hne.ipfs.nftstorage.link/';
 
-  const Gen = await hre.ethers.getContractFactory("Gen");
-  const gen = await Gen.deploy(url);
+  const GenZero = await hre.ethers.getContractFactory("GenZero");
+  const genzero = await GenZero.deploy(url);
 
-  await gen.deployed();
+  await genzero.deployed();
 
-  console.log("Gen deployed to:", gen.address);
-
+  console.log("GenZero deployed to:", genzero.address);
 }
 
 main()

@@ -6,7 +6,7 @@ import '@openzeppelin/contracts/utils/cryptography/MerkleProof.sol';
 
 contract MerkleDistributor {
     bytes32 public merkleRoot;
-
+    
     mapping(address => uint256) private _allowListNumMinted;
 
     /**
@@ -21,12 +21,26 @@ contract MerkleDistributor {
 
 
     /**
+     * @dev throws when number of tokens exceeds total token amount
+     */
+    modifier tokensAvailable(
+        address to,
+        uint256 numberOfTokens,
+        uint256 totalTokenAmount
+    ) {
+        uint256 claimed = getAllowListMinted(to);
+        require(claimed + numberOfTokens <= totalTokenAmount, 'Purchase would exceed number of tokens allotted');
+        _;
+    }
+
+    /**
      * @dev throws when parameters sent by claimer is incorrect
      */
     modifier ableToClaim(address claimer, bytes32[] memory proof) {
         require(onAllowList(claimer, proof), 'Not on allow list');
         _;
     }
+
 
     /**
      * @dev sets the merkle root
@@ -40,10 +54,10 @@ contract MerkleDistributor {
     /**
      * @dev adds the number of tokens to the incoming address
      */
-    function _setAllowListMinted(address to, uint256 numberOfGens) internal virtual {
-        _allowListNumMinted[to] += numberOfGens;
+    function _setAllowListMinted(address to, uint256 numberOfTokens) internal virtual {
+        _allowListNumMinted[to] += numberOfTokens;
 
-        emit Claimed(to, numberOfGens);
+        emit Claimed(to, numberOfTokens);
     }
 
     /**

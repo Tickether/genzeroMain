@@ -36,7 +36,7 @@ contract GenZero is ERC721A, MerkleDistributor, Ownable, ReentrancyGuard {
     }
 
     modifier ableToMint(uint256 numberOfGens) {
-        require(totalSupply() + numberOfGens <= maxGenZero, 'Purchase would exceed Max Token Supply');
+        require(totalSupply() + numberOfGens <= maxGenZero, 'Max Token Supply');
         _;
     }
 
@@ -44,16 +44,16 @@ contract GenZero is ERC721A, MerkleDistributor, Ownable, ReentrancyGuard {
     * Withdraw funds
     */
     function withdraw() public onlyOwner {
-        require(address(this).balance > 0, "Insufficient balance");
+        require(address(this).balance > 0, "Zero balance");
 
         uint256 balance = address(this).balance;
         Address.sendValue(payable(msg.sender), balance);
     }
 
     /*
-    * The ground cost of Morphying, unless free because a Flowty has required age stage
+    * Set Mint Price
     */
-    function setMintCost(uint256 newPrice) public onlyOwner {
+    function setMintPrice(uint256 newPrice) public onlyOwner {
         mintPrice = newPrice;
     }
 
@@ -88,6 +88,15 @@ contract GenZero is ERC721A, MerkleDistributor, Ownable, ReentrancyGuard {
     }
 
     /**
+     * allow list
+     */
+    function setAllowList(bytes32 merkleRoot) external onlyOwner {
+        _setAllowList(merkleRoot);
+    }
+    
+
+
+    /**
      * arcClaim
      */
     function arcListMint(uint256 numberOfGens, bytes32[] memory merkleProof) 
@@ -96,8 +105,12 @@ contract GenZero is ERC721A, MerkleDistributor, Ownable, ReentrancyGuard {
     ableToMint(numberOfGens)
     nonReentrant 
     {
-        require(mintingIsActive, "BioUpgrading must be active to change season");
-        require(numberOfGens > 0, "Must mint at least one");
+        require(mintingIsActive, "claim not active");
+        require(numberOfGens > 0, "cannot mint zero");
+
+        for(uint i = 0; i < numberOfGens; i++) {
+            _gensRegistry[((_currentIndex) + i)] = currentSeasonalCollectionURI;                       
+        }
         
         _setAllowListMinted(msg.sender, numberOfGens);
         _safeMint(msg.sender, numberOfGens);
@@ -112,14 +125,17 @@ contract GenZero is ERC721A, MerkleDistributor, Ownable, ReentrancyGuard {
     ableToMint(numberOfGens)
     nonReentrant
     {
-        require(publicIsActive, "BioUpgrading must be active to change season");
-        require(numberOfGens > 0, "Must mint at least one");
-        require(numberOfGens <= maxPerMint, 'Exceeded max token purchase');
-        require(numberOfGens * mintPrice == msg.value, 'Ether value sent is not correct');
+        require(publicIsActive, "public  not active");
+        require(numberOfGens <= maxPerMint, 'over max mint');
+        require(numberOfGens * mintPrice == msg.value, 'Ether value not correct');
         
-       
+        for(uint i = 0; i < numberOfGens; i++) {
+            _gensRegistry[((_currentIndex) + i)] = currentSeasonalCollectionURI;                       
+        }
+
         _safeMint(msg.sender, numberOfGens);
 
+        
     }
 
     /**
@@ -127,17 +143,17 @@ contract GenZero is ERC721A, MerkleDistributor, Ownable, ReentrancyGuard {
     * Changing current baseURI of a token to a new one, that is current Season topic.
     */
     function bioUpgrade(uint256[] memory tokenIds) public payable {
-        require(bioUpgradingIsActive, "BioUpgrading must be active to change season");
-        require(tokenIds.length * mintPrice == msg.value, 'Ether value sent is not correct');
+        require(bioUpgradingIsActive, "BioUpgrading not active");
+        require(tokenIds.length * mintPrice == msg.value, 'Ether value not correct');
         for(uint i = 0; i < tokenIds.length; i++) {
             // Allow bioupgrading for owner only
             if (ownerOf(tokenIds[i]) != msg.sender || !_exists(tokenIds[i])) {
-                require(false, "Trying to Bio Upgrade non existing/not owned Gen");
+                require(false, "Gen not owned");
             }
         }
         
         for(uint i = 0; i < tokenIds.length; i++) {
-            require(tokenIds[i] < maxGenZero, "TokenID would exceed max supply of Gen0");
+            require(tokenIds[i] < maxGenZero, "Token exceed max supply");
             _gensRegistry[tokenIds[i]] = currentSeasonalCollectionURI;
             emit GenUpdated(tokenIds[i], currentSeasonalCollectionURI);
         }
@@ -148,7 +164,7 @@ contract GenZero is ERC721A, MerkleDistributor, Ownable, ReentrancyGuard {
      * @dev See {ERC721Metadata-tokenURI}.
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+        require(_exists(tokenId), "nonexistent token");
 
         string memory baseURI = _gensRegistry[tokenId];
         return string(abi.encodePacked(baseURI, Strings.toString(tokenId), '.json'));
