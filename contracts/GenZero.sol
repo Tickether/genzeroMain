@@ -30,9 +30,7 @@ contract GenZero is ERC721A, MerkleDistributor, Ownable, ReentrancyGuard {
     
     event GenUpdated(uint256 tokenId, string newBaseURI);
 
-    constructor(string memory baseURI) ERC721A("Eternity Complex", "GenZero") {
-        currentSeasonalCollectionURI = baseURI;
-    }
+    constructor() ERC721A("Eternity Complex", "GenZero") {}
 
     modifier ableToMint(uint256 numberOfGens) {
         require(totalSupply() + numberOfGens <= maxGenZero, 'Max Token Supply');
